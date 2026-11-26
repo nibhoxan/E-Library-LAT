@@ -51,7 +51,7 @@ Open `http://localhost:4100`. The database is stored in the `reading-room-data` 
    - `DATABASE_URL=file:/data/reading-room.sqlite`
    - `JWT_SECRET` to a long, random secret
    - Optionally set `INITIAL_DESK_EMAIL` and `INITIAL_DESK_PASSWORD` to create the initial desk account; remove these variables after the first successful startup.
-5. Set the healthcheck path to `/api/health`, then generate a public domain for the service.
+5. The healthcheck path (`/api/health`) is already set in `railway.json`. Generate a public domain for the service under Settings > Networking.
 6. Keep the service to one replica while using SQLite. The volume persists user/library data, but the app should be backed up regularly.
 
 The Wasmer files (`app.yaml`, `Staticfile`, and `wasmer.toml`) configure a separate static frontend deployment; they do not deploy the Express API or database.
