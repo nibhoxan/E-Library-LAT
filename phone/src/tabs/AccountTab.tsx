@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import { DEFAULT_BASE_URL, getBaseUrl, saveBaseUrl, signIn, signUp } from "../api";
+import { DEFAULT_BASE_URL, forgotPassword, getBaseUrl, resendCode, resetPassword, saveBaseUrl, signIn, signUp, verifyEmail } from "../api";
 import { colors, corners } from "../theme";
 import type { Reader } from "../types";
 
@@ -10,9 +10,22 @@ export function AccountTab({ reader, onReader, onSignOut }: Props) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [mode, setMode] = useState<"login" | "register">("login");
+  const [mode, setMode] = useState<"login" | "register" | "verify" | "forgot" | "reset">("login");
+  const [code, setCode] = useState("");
+  const [cooldown, setCooldown] = useState(0);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setTimeout(() => setCooldown((value) => value - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [cooldown]);
+
+  function go(next: typeof mode, message = "") {
+    setMode(next); setError(""); setNotice(message); setCode("");
+    if (next === "login" || next === "register") setPassword("");
+  }
 
   useEffect(() => { void getBaseUrl().then(setBaseUrl); }, []);
 
@@ -24,10 +37,39 @@ export function AccountTab({ reader, onReader, onSignOut }: Props) {
   async function submit() {
     setError(""); setNotice("");
     try {
-      const account = mode === "login" ? await signIn(email, password) : await signUp(name, email, password);
-      onReader(account);
-      setNotice(`Signed in as ${account.name}.`);
-    } catch (cause) { setError(cause instanceof Error ? cause.message : "Could not sign in."); }
+      if (mode === "register") {
+        const result = await signUp(name, email, password);
+        go("verify", result.emailSent ? `We sent a 6-digit code to ${email}. It expires in 10 minutes.` : "Account created, but the email could not be sent. Tap Send a new code.");
+        setCooldown(60);
+      } else if (mode === "verify") {
+        const account = await verifyEmail(email, code);
+        onReader(account);
+        go("login", `Signed in as ${account.name}.`);
+      } else if (mode === "forgot") {
+        await forgotPassword(email);
+        go("reset", "If an account exists for that email, a 6-digit code is on its way.");
+        setCooldown(60);
+      } else if (mode === "reset") {
+        await resetPassword(email, code, password);
+        go("login", "Your password was updated. Sign in with the new password.");
+      } else {
+        const account = await signIn(email, password);
+        onReader(account);
+        setNotice(`Signed in as ${account.name}.`);
+      }
+    } catch (cause) {
+      if ((cause as { code?: string }).code === "EMAIL_NOT_VERIFIED") { go("verify", "Verify your email first. We sent a 6-digit code to your inbox."); setCooldown(60); }
+      else setError(cause instanceof Error ? cause.message : "Something went wrong.");
+    }
+  }
+
+  async function sendAgain() {
+    setError("");
+    try {
+      if (mode === "reset") await forgotPassword(email); else await resendCode(email);
+      setNotice("If that account can use a code, a new one is on its way.");
+      setCooldown(60);
+    } catch (cause) { setError(cause instanceof Error ? cause.message : "Could not send a new code."); }
   }
 
   return (
@@ -49,15 +91,33 @@ export function AccountTab({ reader, onReader, onSignOut }: Props) {
         </View>
       ) : (
         <View style={styles.panel}>
-          <View style={styles.modeRow}>
-            <Pressable onPress={() => setMode("login")}><Text style={[styles.mode, mode === "login" && styles.selectedMode]}>Sign in</Text></Pressable>
-            <Pressable onPress={() => setMode("register")}><Text style={[styles.mode, mode === "register" && styles.selectedMode]}>Create account</Text></Pressable>
-          </View>
+          {(mode === "login" || mode === "register") ? (
+            <View style={styles.modeRow}>
+              <Pressable onPress={() => go("login")}><Text style={[styles.mode, mode === "login" && styles.selectedMode]}>Sign in</Text></Pressable>
+              <Pressable onPress={() => go("register")}><Text style={[styles.mode, mode === "register" && styles.selectedMode]}>Create account</Text></Pressable>
+            </View>
+          ) : (
+            <Text style={styles.sectionTitle}>{mode === "verify" ? "Verify your email" : mode === "forgot" ? "Forgot password" : "Reset password"}</Text>
+          )}
           {mode === "register" && <TextInput value={name} onChangeText={setName} placeholder="Name" style={styles.input} />}
-          <TextInput value={email} onChangeText={setEmail} placeholder="Email" autoCapitalize="none" keyboardType="email-address" style={styles.input} />
-          <TextInput value={password} onChangeText={setPassword} placeholder="Password" secureTextEntry style={styles.input} />
-          <Pressable style={styles.primaryButton} onPress={() => void submit()}><Text style={styles.primaryText}>{mode === "login" ? "Sign in" : "Create account"}</Text></Pressable>
-          <Text style={styles.helper}>Reader demo: reader@readingroom.local / Reader123!</Text>
+          <TextInput value={email} onChangeText={setEmail} placeholder="Email" autoCapitalize="none" keyboardType="email-address" editable={mode !== "verify" && mode !== "reset"} style={styles.input} />
+          {(mode === "verify" || mode === "reset") && (
+            <TextInput value={code} onChangeText={(value) => setCode(value.replace(/\D/g, "").slice(0, 6))} placeholder="6-digit code" keyboardType="number-pad" maxLength={6} style={styles.input} />
+          )}
+          {(mode === "login" || mode === "register" || mode === "reset") && (
+            <TextInput value={password} onChangeText={setPassword} placeholder={mode === "reset" ? "New password (8+ characters)" : "Password"} secureTextEntry style={styles.input} />
+          )}
+          <Pressable style={styles.primaryButton} onPress={() => void submit()}>
+            <Text style={styles.primaryText}>{mode === "login" ? "Sign in" : mode === "register" ? "Create account" : mode === "verify" ? "Verify email" : mode === "forgot" ? "Send reset code" : "Set new password"}</Text>
+          </Pressable>
+          {(mode === "verify" || mode === "reset") && (
+            <Pressable style={[styles.secondaryButton, cooldown > 0 && { opacity: 0.5 }]} disabled={cooldown > 0} onPress={() => void sendAgain()}>
+              <Text style={styles.secondaryText}>{cooldown > 0 ? `Send a new code in ${cooldown}s` : "Send a new code"}</Text>
+            </Pressable>
+          )}
+          {mode === "login" && <Pressable onPress={() => go("forgot")}><Text style={styles.mode}>Forgot your password?</Text></Pressable>}
+          {mode !== "login" && mode !== "register" && <Pressable onPress={() => go("login")}><Text style={styles.mode}>Back to sign in</Text></Pressable>}
+          {mode === "login" && <Text style={styles.helper}>Demo accounts only exist on a local server.</Text>}
         </View>
       )}
       {notice ? <Text style={styles.notice}>{notice}</Text> : null}

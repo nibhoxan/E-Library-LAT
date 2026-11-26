@@ -13,6 +13,7 @@ const statements = [
     "name" TEXT NOT NULL,
     "passwordHash" TEXT NOT NULL,
     "role" TEXT NOT NULL DEFAULT 'reader',
+    "emailVerifiedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "Reader_pkey" PRIMARY KEY ("id")
   )`,
@@ -56,6 +57,19 @@ const statements = [
     CONSTRAINT "ShelfEntry_readerId_fkey" FOREIGN KEY ("readerId") REFERENCES "Reader"("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "ShelfEntry_titleId_fkey" FOREIGN KEY ("titleId") REFERENCES "Title"("id") ON DELETE RESTRICT ON UPDATE CASCADE
   )`,
+  `CREATE TABLE IF NOT EXISTS "EmailCode" (
+    "id" TEXT NOT NULL,
+    "readerId" TEXT NOT NULL,
+    "purpose" TEXT NOT NULL,
+    "codeHash" TEXT NOT NULL,
+    "expiresAt" TIMESTAMP(3) NOT NULL,
+    "attempts" INTEGER NOT NULL DEFAULT 0,
+    "usedAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "EmailCode_pkey" PRIMARY KEY ("id"),
+    CONSTRAINT "EmailCode_readerId_fkey" FOREIGN KEY ("readerId") REFERENCES "Reader"("id") ON DELETE CASCADE ON UPDATE CASCADE
+  )`,
+  `CREATE INDEX IF NOT EXISTS "EmailCode_readerId_purpose_idx" ON "EmailCode"("readerId", "purpose")`,
   `CREATE UNIQUE INDEX IF NOT EXISTS "Reader_email_key" ON "Reader"("email")`,
   `CREATE UNIQUE INDEX IF NOT EXISTS "Title_gutenbergId_key" ON "Title"("gutenbergId")`,
   `CREATE INDEX IF NOT EXISTS "Title_title_idx" ON "Title"("title")`,
@@ -72,6 +86,26 @@ export async function ensureSchema() {
   const client = new pg.Client(poolConfig());
   await client.connect();
   try {
+    // Existing databases already have a Reader table without emailVerifiedAt. Add the column once and treat
+    // every account that existed before email verification as verified, so nobody is locked out. The check
+    // makes this run only the first time; accounts created later start unverified.
+    const hadReaderTable = (await client.query(
+      `SELECT 1 FROM information_schema.tables WHERE table_schema = current_schema() AND table_name = 'Reader'`
+    )).rowCount === 1;
+    const hadVerifiedColumn = (await client.query(
+      `SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'Reader' AND column_name = 'emailVerifiedAt'`
+    )).rowCount === 1;
+    if (hadReaderTable && !hadVerifiedColumn) {
+      await client.query("BEGIN");
+      try {
+        await client.query(`ALTER TABLE "Reader" ADD COLUMN IF NOT EXISTS "emailVerifiedAt" TIMESTAMP(3)`);
+        await client.query(`UPDATE "Reader" SET "emailVerifiedAt" = "createdAt" WHERE "emailVerifiedAt" IS NULL`);
+        await client.query("COMMIT");
+      } catch (error) {
+        await client.query("ROLLBACK");
+        throw error;
+      }
+    }
     for (const statement of statements) await client.query(statement);
   } finally {
     await client.end();

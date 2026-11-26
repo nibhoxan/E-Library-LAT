@@ -49,11 +49,30 @@ Open `http://localhost:4100`. The database is stored in the `reading-room-data` 
 `app.yaml` deploys the whole app (website and API) to Wasmer Edge with a managed Postgres database. Wasmer's Node.js support is in beta, so check the deploy logs on the first run.
 
 1. Install the Wasmer CLI and run `wasmer login`.
-2. In the Wasmer dashboard, set `JWT_SECRET` to a random value of at least 32 characters. Optionally set `INITIAL_DESK_EMAIL` and `INITIAL_DESK_PASSWORD` (16+ characters), and remove them after the first successful start.
+2. In the Wasmer dashboard, set `JWT_SECRET` to a random value of at least 32 characters. Set `BREVO_API_KEY` and `BREVO_SENDER_EMAIL` as secrets (see Email verification below). Optionally set `INITIAL_DESK_EMAIL` and `INITIAL_DESK_PASSWORD` (16+ characters), and remove them after the first successful start.
 3. From this folder, run `wasmer deploy --build-remote`. Wasmer builds the Node.js app on its servers, because the repo has no `wasmer.toml`. Wasmer provisions the Postgres database on the first deployment and injects `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME` and `DB_PASSWORD`. The server builds its `DATABASE_URL` from those.
 4. Open the app URL and check `/api/health`.
 
 The managed database is only offered in the `fr-roub1` region, so the app is pinned to it.
+
+## Email verification and password reset
+
+New accounts confirm their email with a 6-digit code before they can sign in, and readers who forget a password get a reset code by email. Codes expire after 10 minutes, work once, allow 5 wrong guesses, and can be re-sent once a minute. Only a keyed hash of each code is stored. Accounts that existed before this feature are treated as verified, and the desk account created from `INITIAL_DESK_EMAIL` is pre-verified.
+
+Email is sent through [Brevo](https://www.brevo.com) over HTTPS (no SMTP):
+
+1. In Brevo, verify a sender under **Senders, Domains & Dedicated IPs** and create an API key under **SMTP & API** with the **Transactional email** permission.
+2. Store both as Wasmer secrets, then redeploy:
+   ```powershell
+   wasmer app secrets create BREVO_API_KEY "<key>"
+   wasmer app secrets create BREVO_SENDER_EMAIL "<verified sender address>"
+   wasmer deploy --build-remote
+   ```
+3. Locally, leave `BREVO_API_KEY` unset and the codes are printed in the server console.
+
+Routes (all under `/api/session`): `POST /register`, `/verify-email`, `/resend-code`, `/login` (answers `403` with `code: "EMAIL_NOT_VERIFIED"` for an unverified account), `/forgot-password`, and `/reset-password`. `forgot-password` and `resend-code` give the same answer whether or not the account exists.
+
+Run the tests with a local Postgres: `DATABASE_URL=postgresql://readingroom:readingroom@localhost:5432/readingroom npm test --workspace server`. The Postgres-backed tests are skipped when `DATABASE_URL` is not set.
 
 ## Phone app
 

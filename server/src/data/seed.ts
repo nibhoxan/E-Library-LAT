@@ -27,9 +27,11 @@ export async function seedDatabase() {
     const passwordHash = await bcrypt.hash(account.password, 12);
     await prisma.reader.upsert({
       where: { email: account.email },
-      create: { email: account.email, name: account.name, role: account.role, passwordHash },
+      create: { email: account.email, name: account.name, role: account.role, passwordHash, emailVerifiedAt: new Date() },
       update: { role: account.role }
     });
+    // Seeded and initial desk accounts are created by the operator, so they do not need an email code.
+    await prisma.reader.updateMany({ where: { email: account.email, emailVerifiedAt: null }, data: { emailVerifiedAt: new Date() } });
   }
 
   const count = await prisma.title.count();

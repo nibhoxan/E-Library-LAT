@@ -19,7 +19,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const response = await fetch(`/api${path}`, { ...init, headers });
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));
-    throw new Error(body.error ?? `Request failed (${response.status}).`);
+    throw Object.assign(new Error(body.error ?? `Request failed (${response.status}).`), { code: body.code as string | undefined });
   }
   if (response.status === 204) return undefined as T;
   return response.json() as Promise<T>;
