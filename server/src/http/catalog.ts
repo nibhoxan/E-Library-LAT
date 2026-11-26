@@ -10,10 +10,10 @@ catalogRouter.get("/", async (req, res, next) => {
     const category = typeof req.query.category === "string" ? req.query.category.trim() : "";
     const query = typeof req.query.q === "string" ? req.query.q.trim() : "";
     const filters = [
-      title ? { title: { contains: title } } : undefined,
-      author ? { author: { contains: author } } : undefined,
-      category ? { category: { contains: category } } : undefined,
-      query ? { OR: [{ title: { contains: query } }, { author: { contains: query } }, { category: { contains: query } }] } : undefined
+      title ? { title: { contains: title, mode: "insensitive" as const } } : undefined,
+      author ? { author: { contains: author, mode: "insensitive" as const } } : undefined,
+      category ? { category: { contains: category, mode: "insensitive" as const } } : undefined,
+      query ? { OR: [{ title: { contains: query, mode: "insensitive" as const } }, { author: { contains: query, mode: "insensitive" as const } }, { category: { contains: query, mode: "insensitive" as const } }] } : undefined
     ].filter(Boolean);
     const where = filters.length ? { AND: filters as Array<Record<string, unknown>> } : {};
     const page = Math.max(1, Number.parseInt(String(req.query.page ?? "1"), 10) || 1);
