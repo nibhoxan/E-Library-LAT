@@ -1,4 +1,16 @@
 kind: wasmer.io/App.v0
 name: e-library-lat
 owner: nibhoxan
-package: .
+
+env:
+  NODE_ENV: production
+  # Set JWT_SECRET (32+ characters) as a secret in the Wasmer dashboard, not in this file.
+  # Optional first desk account: INITIAL_DESK_EMAIL and INITIAL_DESK_PASSWORD (16+ characters).
+
+capabilities:
+  database:
+    engine: postgres
+
+locality:
+  regions:
+    - fr-roub1

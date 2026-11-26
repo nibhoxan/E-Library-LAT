@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "concurrently -k -n API,WEB -c green,blue \"npm run dev --workspace server\" \"npm run dev --workspace client\"",
     "build": "npm run build --workspace server && npm run build --workspace client",
+    "start": "npm run start --workspace server",
     "db:generate": "npm run db:generate --workspace server",
     "phone:install": "npm install --prefix phone",
     "phone:dev": "npm run dev --prefix phone",

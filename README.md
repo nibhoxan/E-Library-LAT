@@ -1,6 +1,6 @@
 # Reading Room
 
-A shared public-domain catalog with a Node/Express API, SQLite database, React website, and Expo Android client. The website and phone use the same API for sessions, downloads, shelves, bookmarks, and librarian actions.
+A shared public-domain catalog with a Node/Express API, PostgreSQL database, React website, and Expo Android client. The website and phone use the same API for sessions, downloads, shelves, bookmarks, and librarian actions.
 
 ## Requirements
 
@@ -17,9 +17,9 @@ npm install
 npm run dev
 ```
 
-The website is served by Vite (normally at `http://localhost:5173`) and proxies `/api` to the Express API at `http://localhost:4100`. The API prepares the SQLite schema and seed data before listening, so its health endpoint only succeeds after database setup completes.
+The website is served by Vite (normally at `http://localhost:5173`) and proxies `/api` to the Express API at `http://localhost:4100`. The API prepares the database schema and seed data before listening, so its health endpoint only succeeds after database setup completes.
 
-The default SQLite file is `server/reading-room.db`. Optional server settings can be copied from `server/.env.example` to `server/.env`. Set a private `JWT_SECRET` before deploying outside local development.
+Start a local Postgres first with `docker compose up -d db`. Server settings (including `DATABASE_URL`) are copied from `server/.env.example` to `server/.env`. Set a private `JWT_SECRET` before deploying outside local development.
 
 Local development demo accounts:
 
@@ -30,7 +30,7 @@ These accounts are not created in production. The built-in public-domain catalog
 
 ## Run the production container
 
-Docker Compose builds the React site and Express API into one service. Express serves the built site and its `/api` routes from the same origin. SQLite is stored in a named volume.
+Docker Compose builds the React site and Express API into one service. Express serves the built site and its `/api` routes from the same origin. Postgres runs as a second service with its data in a named volume.
 
 Create a root `.env` file (it is ignored by Git) and add a random `JWT_SECRET` of at least 32 characters. To provision the initial desk account, also set `INITIAL_DESK_EMAIL` and a random `INITIAL_DESK_PASSWORD` of at least 16 characters. Keep those values private.
 
@@ -42,19 +42,16 @@ docker compose up --build
 
 Open `http://localhost:4100`. The database is stored in the `reading-room-data` volume and survives `docker compose down`; do not use `docker compose down -v` unless you intend to delete that data. New readers can register from the Account screen. The demo accounts are only available in local development.
 
-## Deploy the full stack from GitHub with Railway
+## Deploy to Wasmer Edge
 
-1. Commit and push the project to GitHub. Railway builds the root `Dockerfile`; Docker Desktop is not required on your computer.
-2. In Railway, create a project and deploy from the GitHub repository. Select the repository and `main` branch.
-3. Add a volume to the service and set its mount path to `/data`.
-4. Set service variables:
-   - `DATABASE_URL=file:/data/reading-room.sqlite`
-   - `JWT_SECRET` to a long, random secret
-   - Optionally set `INITIAL_DESK_EMAIL` and `INITIAL_DESK_PASSWORD` to create the initial desk account; remove these variables after the first successful startup.
-5. Set the healthcheck path to `/api/health`, then generate a public domain for the service.
-6. Keep the service to one replica while using SQLite. The volume persists user/library data, but the app should be backed up regularly.
+`app.yaml` deploys the whole app (website and API) to Wasmer Edge with a managed Postgres database. Wasmer's Node.js support is in beta, so check the deploy logs on the first run.
 
-The Wasmer files (`app.yaml`, `Staticfile`, and `wasmer.toml`) configure a separate static frontend deployment; they do not deploy the Express API or database.
+1. Install the Wasmer CLI and run `wasmer login`.
+2. In the Wasmer dashboard, set `JWT_SECRET` to a random value of at least 32 characters. Optionally set `INITIAL_DESK_EMAIL` and `INITIAL_DESK_PASSWORD` (16+ characters), and remove them after the first successful start.
+3. From this folder, run `wasmer deploy`. Wasmer provisions the Postgres database on the first deployment and injects `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME` and `DB_PASSWORD`. The server builds its `DATABASE_URL` from those.
+4. Open the app URL and check `/api/health`.
+
+The managed database is only offered in the `fr-roub1` region, so the app is pinned to it.
 
 ## Phone app
 

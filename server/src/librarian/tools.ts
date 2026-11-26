@@ -22,7 +22,7 @@ export async function findTitles(query: string) {
   const phrase = query.trim();
   if (!phrase) return [];
   return prisma.title.findMany({
-    where: { OR: [{ title: { contains: phrase } }, { author: { contains: phrase } }, { category: { contains: phrase } }] },
+    where: { OR: [{ title: { contains: phrase, mode: "insensitive" as const } }, { author: { contains: phrase, mode: "insensitive" as const } }, { category: { contains: phrase, mode: "insensitive" as const } }] },
     select: { id: true, title: true, author: true, category: true },
     orderBy: { title: "asc" },
     take: 8

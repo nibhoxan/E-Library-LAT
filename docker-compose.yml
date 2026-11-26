@@ -1,19 +1,37 @@
 services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: readingroom
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-readingroom}
+      POSTGRES_DB: readingroom
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - reading-room-db:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U readingroom"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   app:
     build:
       context: .
       dockerfile: Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
     environment:
       NODE_ENV: production
       PORT: "4100"
-      DATABASE_URL: file:/data/reading-room.sqlite
+      DATABASE_URL: postgresql://readingroom:${POSTGRES_PASSWORD:-readingroom}@db:5432/readingroom
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in the root .env file}
       INITIAL_DESK_EMAIL: ${INITIAL_DESK_EMAIL:-}
       INITIAL_DESK_PASSWORD: ${INITIAL_DESK_PASSWORD:-}
     ports:
       - "${HOST_PORT:-4100}:4100"
-    volumes:
-      - reading-room-data:/data
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4100/api/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"]
@@ -23,4 +41,4 @@ services:
       start_period: 60s
 
 volumes:
-  reading-room-data:
+  reading-room-db:
