@@ -221,7 +221,7 @@ test("the per-email limiter answers 429 after repeated requests", { skip }, asyn
 
 test("the migration verifies accounts that existed before, once, and later sign-ups stay unverified", { skip }, async () => {
   const oldEmail = unique();
-  await db.query(`INSERT INTO "Reader" (id, email, name, "passwordHash") VALUES ($1, $2, 'Old Reader', 'x')`, [`old${counter}`, oldEmail]);
+  await db.query(`INSERT INTO "Reader" (id, email, name, "passwordHash") VALUES ($1, $2, 'Old Reader', 'x')`, [`old${Date.now()}${counter}`, oldEmail]);
   await db.query(`ALTER TABLE "Reader" DROP COLUMN "emailVerifiedAt"`);
   await schemaModule.ensureSchema();
   const migrated = await db.query(`SELECT "emailVerifiedAt" FROM "Reader" WHERE email = $1`, [oldEmail]);

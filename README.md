@@ -74,6 +74,10 @@ Routes (all under `/api/session`): `POST /register`, `/verify-email`, `/resend-c
 
 Run the tests with a local Postgres: `DATABASE_URL=postgresql://readingroom:readingroom@localhost:5432/readingroom npm test --workspace server`. The Postgres-backed tests are skipped when `DATABASE_URL` is not set.
 
+## Book covers
+
+Book cards, record pages and the shelf show a cover image. The first time a cover is needed, the server searches Open Library by title and author (then Project Gutenberg for books with a Gutenberg id), remembers the result in the database, and redirects the app to the image, so each book is looked up only once. A book with no cover found, or a slow connection, shows a generated cover with its title and author instead. The server needs outbound HTTPS access to `openlibrary.org` and `covers.openlibrary.org`; if it cannot reach them, every book simply shows a generated cover.
+
 ## Phone app
 
 Install the isolated Expo dependencies, then launch Metro:

@@ -44,6 +44,8 @@ model Title {
   summary       String
   publishedYear Int?
   gutenbergId   Int?         @unique
+  coverUrl       String?
+  coverCheckedAt DateTime?
   downloads     Download[]
   bookmarks     Bookmark[]
   shelfEntries  ShelfEntry[]

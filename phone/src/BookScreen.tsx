@@ -3,6 +3,7 @@ import { Alert, Linking, Pressable, ScrollView, StyleSheet, Text, View } from "r
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
 import { addToShelf, api, getBaseUrl, getToken } from "./api";
+import { Cover } from "./Cover";
 import { colors, corners } from "./theme";
 import type { Reader, Title } from "./types";
 
@@ -38,6 +39,7 @@ export function BookScreen({ title, reader, onClose }: { title: Title; reader: R
     <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
       <Pressable onPress={onClose}><Text style={styles.back}>← Back to catalog</Text></Pressable>
       <View style={styles.record}>
+        <View style={styles.coverRow}><Cover title={title} width={150} /></View>
         <Text style={styles.eyebrow}>{title.category}{title.publishedYear ? ` · FIRST PUBLISHED ${title.publishedYear}` : ""}</Text>
         <Text style={styles.title}>{title.title}</Text>
         <Text style={styles.author}>{title.author}</Text>
@@ -60,6 +62,7 @@ const styles = StyleSheet.create({
   container: { padding: 18, paddingBottom: 30 },
   back: { color: colors.green, fontWeight: "700", fontSize: 12, paddingVertical: 10 },
   record: { marginTop: 12, padding: 22, borderWidth: 1, borderColor: colors.line, borderRadius: corners.card, backgroundColor: colors.card, shadowColor: "#23332a", shadowOpacity: 0.04, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 1 },
+  coverRow: { alignItems: "center", marginBottom: 20 },
   eyebrow: { color: colors.green, fontSize: 9, fontWeight: "700", letterSpacing: 1.2 },
   title: { color: colors.ink, fontFamily: "serif", fontSize: 32, lineHeight: 39, marginTop: 13 },
   author: { color: colors.muted, fontSize: 15, marginTop: 9 },

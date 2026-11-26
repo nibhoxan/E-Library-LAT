@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { api } from "../api";
 import { useAuth } from "../auth";
 import type { Title } from "../types";
+import { Cover } from "../shell/Cover";
 
 export function TitleScreen() {
   const { id = "" } = useParams();
@@ -56,6 +57,9 @@ export function TitleScreen() {
     <div className="page title-page">
       <Link to="/" className="text-button back-link">← Back to catalog</Link>
       <article className="title-record">
+        <div className="record-layout">
+        <div className="record-cover"><Cover title={title} size="detail" /></div>
+        <div className="record-body">
         <div className="eyebrow">{title.category}{title.publishedYear ? ` · FIRST PUBLISHED ${title.publishedYear}` : ""}</div>
         <h1>{title.title}</h1>
         <p className="record-author">{title.author}</p>
@@ -70,6 +74,8 @@ export function TitleScreen() {
         {!reader && <p className="muted">Sign in to sync your shelf and bookmarks across devices.</p>}
         {notice && <p className="form-message" role="status">{notice}</p>}
         <p className="card-note">The PDF is an original bibliographic card, not the book text.</p>
+        </div>
+        </div>
       </article>
     </div>
   );

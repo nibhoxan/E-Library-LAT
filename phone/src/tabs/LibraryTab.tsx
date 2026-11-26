@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { api } from "../api";
+import { Cover } from "../Cover";
 import { colors, corners } from "../theme";
 import type { Title } from "../types";
 
@@ -42,11 +43,14 @@ export function LibraryTab({ onSelect }: { onSelect: (title: Title) => void }) {
         contentContainerStyle={styles.list}
         renderItem={({ item }) => (
           <Pressable style={styles.card} onPress={() => onSelect(item)}>
+            <Cover title={item} width={86} />
+            <View style={styles.cardBody}>
             <Text style={styles.category}>{item.category}{item.publishedYear ? ` · ${item.publishedYear}` : ""}</Text>
             <Text style={styles.bookTitle}>{item.title}</Text>
             <Text style={styles.author}>{item.author}</Text>
-            <Text style={styles.summary} numberOfLines={3}>{item.summary}</Text>
+            <Text style={styles.summary} numberOfLines={2}>{item.summary}</Text>
             <View style={styles.actionRow}><Text style={styles.link}>View record</Text><Text style={styles.arrow}>→</Text></View>
+            </View>
           </Pressable>
         )}
         ListFooterComponent={busy && items.length > 0 ? <ActivityIndicator color={colors.green} /> : null}
@@ -63,9 +67,10 @@ const styles = StyleSheet.create({
   subheading: { color: colors.muted, fontSize: 13, marginTop: 6, lineHeight: 18 },
   search: { marginHorizontal: 20, marginBottom: 12, borderWidth: 1, borderColor: colors.line, borderRadius: corners.control, backgroundColor: colors.card, paddingHorizontal: 13, paddingVertical: 12, color: colors.ink, shadowColor: "#23332a", shadowOpacity: 0.03, shadowRadius: 6, shadowOffset: { width: 0, height: 2 }, elevation: 1 },
   list: { paddingHorizontal: 20, paddingBottom: 18, gap: 12 },
-  card: { padding: 17, borderWidth: 1, borderColor: colors.line, borderRadius: corners.card, backgroundColor: colors.card, shadowColor: "#23332a", shadowOpacity: 0.04, shadowRadius: 8, shadowOffset: { width: 0, height: 4 }, elevation: 1 },
+  card: { flexDirection: "row", gap: 14, padding: 15, borderWidth: 1, borderColor: colors.line, borderRadius: corners.card, backgroundColor: colors.card, shadowColor: "#23332a", shadowOpacity: 0.04, shadowRadius: 8, shadowOffset: { width: 0, height: 4 }, elevation: 1 },
+  cardBody: { flex: 1, minWidth: 0 },
   category: { color: colors.green, fontSize: 10, fontWeight: "700", textTransform: "uppercase", letterSpacing: 1 },
-  bookTitle: { color: colors.ink, fontFamily: "serif", fontSize: 23, lineHeight: 28, marginTop: 10 },
+  bookTitle: { color: colors.ink, fontFamily: "serif", fontSize: 20, lineHeight: 25, marginTop: 7 },
   author: { color: colors.muted, fontSize: 12, marginTop: 4 },
   summary: { color: "#667269", fontSize: 12, lineHeight: 18, marginTop: 9 },
   actionRow: { flexDirection: "row", alignItems: "center", marginTop: 14 },
