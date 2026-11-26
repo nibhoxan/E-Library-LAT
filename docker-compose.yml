@@ -1,0 +1,30 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: production
+      PORT: "4100"
+      DATABASE_URL: file:/data/reading-room.sqlite
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in the root .env file}
+      INITIAL_DESK_EMAIL: ${INITIAL_DESK_EMAIL:-}
+      INITIAL_DESK_PASSWORD: ${INITIAL_DESK_PASSWORD:-}
+    ports:
+      - "${HOST_PORT:-4100}:4100"
+    volumes:
+      - reading-room-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - fetch('http://127.0.0.1:4100/api/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  reading-room-data:

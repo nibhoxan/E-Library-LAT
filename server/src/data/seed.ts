@@ -3,10 +3,26 @@ import { prisma } from "./prisma.js";
 import { bookList } from "./catalog.js";
 
 export async function seedDatabase() {
-  const accounts = [
-    { email: "reader@readingroom.local", name: "Reading Room Reader", password: "Reader123!", role: "reader" },
-    { email: "desk@readingroom.local", name: "Reading Room Desk", password: "Desk123!", role: "desk" }
-  ];
+  const accounts: Array<{ email: string; name: string; password: string; role: "reader" | "desk" }> = [];
+  if (process.env.NODE_ENV === "production") {
+    const email = process.env.INITIAL_DESK_EMAIL?.trim().toLowerCase();
+    const password = process.env.INITIAL_DESK_PASSWORD;
+    if (Boolean(email) !== Boolean(password)) {
+      throw new Error("Set both INITIAL_DESK_EMAIL and INITIAL_DESK_PASSWORD to create the initial desk account.");
+    }
+    if (email && password) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || password.length < 16) {
+        throw new Error("The initial desk account requires a valid email and a password of at least 16 characters.");
+      }
+      accounts.push({ email, name: "Reading Room Desk", password, role: "desk" });
+    }
+  } else {
+    accounts.push(
+      { email: "reader@readingroom.local", name: "Reading Room Reader", password: "Reader123!", role: "reader" },
+      { email: "desk@readingroom.local", name: "Reading Room Desk", password: "Desk123!", role: "desk" }
+    );
+  }
+
   for (const account of accounts) {
     const passwordHash = await bcrypt.hash(account.password, 12);
     await prisma.reader.upsert({

@@ -9,12 +9,19 @@ export type UserClaims = {
 };
 
 const secret = () => {
-  const value = process.env.JWT_SECRET ?? "local-reading-room-secret-change-me";
-  if (process.env.NODE_ENV === "production" && value === "local-reading-room-secret-change-me") {
-    throw new Error("JWT_SECRET must be set in production.");
+  const configuredSecret = process.env.JWT_SECRET;
+  if (process.env.NODE_ENV === "production") {
+    if (!configuredSecret || configuredSecret.length < 32 || configuredSecret.startsWith("replace-this-")) {
+      throw new Error("Set JWT_SECRET in production to a random value of at least 32 characters.");
+    }
+    return configuredSecret;
   }
-  return value;
+  return configuredSecret ?? "local-reading-room-secret-change-me";
 };
+
+export function validateJwtSecret() {
+  secret();
+}
 
 export function issueToken(claims: UserClaims): string {
   return jwt.sign(claims, secret(), { expiresIn: "14d" });

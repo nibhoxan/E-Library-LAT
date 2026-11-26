@@ -17,16 +17,44 @@ npm install
 npm run dev
 ```
 
-The website is served by Vite (normally at `http://localhost:5173`) and proxies `/api` to the Express API at `http://localhost:4100`. The API opens its port before it pushes the SQLite schema and seeds the database, so the website can keep retrying while setup completes.
+The website is served by Vite (normally at `http://localhost:5173`) and proxies `/api` to the Express API at `http://localhost:4100`. The API prepares the SQLite schema and seed data before listening, so its health endpoint only succeeds after database setup completes.
 
 The default SQLite file is `server/reading-room.db`. Optional server settings can be copied from `server/.env.example` to `server/.env`. Set a private `JWT_SECRET` before deploying outside local development.
 
-Demo accounts:
+Local development demo accounts:
 
 - Reader: `reader@readingroom.local` / `Reader123!`
 - Desk: `desk@readingroom.local` / `Desk123!`
 
-The built-in public-domain catalog is seeded on first startup. Startup skips book insertion when 200 or more titles already exist. Existing downloads and shelf records are not cleared.
+These accounts are not created in production. The built-in public-domain catalog is seeded on first startup. Startup skips book insertion when 200 or more titles already exist. Existing downloads and shelf records are not cleared.
+
+## Run the production container
+
+Docker Compose builds the React site and Express API into one service. Express serves the built site and its `/api` routes from the same origin. SQLite is stored in a named volume.
+
+Create a root `.env` file (it is ignored by Git) and add a random `JWT_SECRET` of at least 32 characters. To provision the initial desk account, also set `INITIAL_DESK_EMAIL` and a random `INITIAL_DESK_PASSWORD` of at least 16 characters. Keep those values private.
+
+Build and run:
+
+```sh
+docker compose up --build
+```
+
+Open `http://localhost:4100`. The database is stored in the `reading-room-data` volume and survives `docker compose down`; do not use `docker compose down -v` unless you intend to delete that data. New readers can register from the Account screen. The demo accounts are only available in local development.
+
+## Deploy the full stack from GitHub with Railway
+
+1. Commit and push the project to GitHub. Railway builds the root `Dockerfile`; Docker Desktop is not required on your computer.
+2. In Railway, create a project and deploy from the GitHub repository. Select the repository and `main` branch.
+3. Add a volume to the service and set its mount path to `/data`.
+4. Set service variables:
+   - `DATABASE_URL=file:/data/reading-room.sqlite`
+   - `JWT_SECRET` to a long, random secret
+   - Optionally set `INITIAL_DESK_EMAIL` and `INITIAL_DESK_PASSWORD` to create the initial desk account; remove these variables after the first successful startup.
+5. Set the healthcheck path to `/api/health`, then generate a public domain for the service.
+6. Keep the service to one replica while using SQLite. The volume persists user/library data, but the app should be backed up regularly.
+
+The Wasmer files (`app.yaml`, `Staticfile`, and `wasmer.toml`) configure a separate static frontend deployment; they do not deploy the Express API or database.
 
 ## Phone app
 

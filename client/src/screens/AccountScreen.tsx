@@ -54,10 +54,12 @@ export function AccountScreen() {
             {error && <p className="form-message error" role="alert">{error}</p>}
             <button className="button button-primary" disabled={busy}>{busy ? "Please wait…" : mode === "login" ? "Sign in" : "Create account"}</button>
           </form>
-          <div className="seed-account">
-            <p><strong>Reader demo</strong><br />reader@readingroom.local · Reader123!</p>
-            <p><strong>Desk demo</strong><br />desk@readingroom.local · Desk123!</p>
-          </div>
+          {import.meta.env.DEV && (
+            <div className="seed-account">
+              <p><strong>Reader demo</strong><br />reader@readingroom.local · Reader123!</p>
+              <p><strong>Desk demo</strong><br />desk@readingroom.local · Desk123!</p>
+            </div>
+          )}
         </div>
       )}
     </div>
