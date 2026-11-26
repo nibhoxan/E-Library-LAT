@@ -2,6 +2,8 @@
 
 A shared public-domain catalog with a Node/Express API, PostgreSQL database, React website, and Expo Android client. The website and phone use the same API for sessions, downloads, shelves, bookmarks, and librarian actions.
 
+See [ARCHITECTURE.md](ARCHITECTURE.md) for the system design, database structure and AI librarian architecture.
+
 ## Requirements
 
 - Node.js 20 or newer
