@@ -62,13 +62,25 @@ npm run phone:install
 npm run phone:dev
 ```
 
-Open the project in Expo Go or an Android emulator. The default API address is `http://10.0.2.2:4100`, which reaches the host computer from the Android emulator. On the Account screen, enter and save another full API base URL to point the app at a different server.
+Open the project in an Android emulator or on a phone. The app talks to the deployed server (`https://reading-room-lat.wasmer.app`) by default. To use a local API from the Android emulator, open the Account screen, enter `http://10.0.2.2:4100` (the emulator's address for your computer) and save, or start Metro with `EXPO_PUBLIC_API_URL=http://10.0.2.2:4100`.
 
 Type-check the app and create its Android JavaScript bundle with:
 
 ```sh
 npm run phone:build
 ```
+
+### Build an installable APK
+
+The `phone/android` folder is a ready Android project. With Android Studio installed (it provides the Android SDK and Java), run:
+
+```sh
+npm run phone:install
+cd phone/android
+./gradlew assembleRelease        # on Windows: gradlew.bat assembleRelease
+```
+
+The file is created at `phone/android/app/build/outputs/apk/release/app-release.apk`. Copy it to an Android phone and open it to install (allow installs from unknown sources when asked). This release build is signed with the debug key, which is fine for demos and testing but not for the Play Store.
 
 ## Product notes
 
