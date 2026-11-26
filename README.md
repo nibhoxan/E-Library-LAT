@@ -17,7 +17,7 @@ npm install
 npm run dev
 ```
 
-The website is served by Vite (normally at `http://localhost:5173`) and proxies `/api` to the Express API at `http://localhost:4100`. The API prepares the database schema and seed data before listening, so its health endpoint only succeeds after database setup completes.
+The website is served by Vite (normally at `http://localhost:5173`) and proxies `/api` to the Express API at `http://localhost:4100`. The API creates its tables (`server/src/data/schema.ts`, which must match `server/prisma/schema.prisma`) and seeds data before listening, so its health endpoint only succeeds after database setup completes.
 
 Start a local Postgres first with `docker compose up -d db`. Server settings (including `DATABASE_URL`) are copied from `server/.env.example` to `server/.env`. Set a private `JWT_SECRET` before deploying outside local development.
 

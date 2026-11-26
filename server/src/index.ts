@@ -1,14 +1,12 @@
 import "dotenv/config";
-import { execFile } from "node:child_process";
 import { existsSync } from "node:fs";
-import { promisify } from "node:util";
 import path from "node:path";
-import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import cors from "cors";
 import express from "express";
 import { prisma } from "./data/prisma.js";
 import { seedDatabase } from "./data/seed.js";
+import { ensureSchema } from "./data/schema.js";
 import { sessionRouter } from "./http/session.js";
 import { catalogRouter } from "./http/catalog.js";
 import { loansRouter } from "./http/loans.js";
@@ -19,8 +17,6 @@ import { optionalAuth, validateJwtSecret } from "./http/auth.js";
 
 const app = express();
 const port = Number(process.env.PORT ?? 4100);
-const executeFile = promisify(execFile);
-const require = createRequire(import.meta.url);
 const serverRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const clientDist = path.resolve(serverRoot, "../client/dist");
 const clientIndex = path.join(clientDist, "index.html");
@@ -51,8 +47,7 @@ app.use((error: unknown, _req: express.Request, res: express.Response, _next: ex
 });
 
 async function prepareDatabase() {
-  const prismaCli = require.resolve("prisma/build/index.js");
-  await executeFile(process.execPath, [prismaCli, "db", "push", "--schema", path.resolve(serverRoot, "prisma/schema.prisma")], { cwd: serverRoot });
+  await ensureSchema();
   await prisma.$connect();
   await seedDatabase();
   console.info(`Reading Room API is ready with ${await prisma.title.count()} titles.`);
