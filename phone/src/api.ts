@@ -3,7 +3,9 @@ import type { Reader, ShelfResponse, Title } from "./types";
 
 const BASE_KEY = "reading-room-api-base";
 const TOKEN_KEY = "reading-room-token";
-export const DEFAULT_BASE_URL = "http://10.0.2.2:4100";
+// The deployed server. For the Android emulator against a local API, save http://10.0.2.2:4100 on the Account screen
+// or build with EXPO_PUBLIC_API_URL set.
+export const DEFAULT_BASE_URL = process.env.EXPO_PUBLIC_API_URL || "https://reading-room-lat.wasmer.app";
 
 export async function getBaseUrl() {
   return (await AsyncStorage.getItem(BASE_KEY)) || DEFAULT_BASE_URL;
@@ -11,7 +13,7 @@ export async function getBaseUrl() {
 
 export async function saveBaseUrl(value: string) {
   const clean = value.trim().replace(/\/+$/, "");
-  if (!/^https?:\/\/.+/i.test(clean)) throw new Error("Enter a full URL, such as http://10.0.2.2:4100.");
+  if (!/^https?:\/\/.+/i.test(clean)) throw new Error("Enter a full URL, such as https://reading-room-lat.wasmer.app.");
   await AsyncStorage.setItem(BASE_KEY, clean);
 }
 

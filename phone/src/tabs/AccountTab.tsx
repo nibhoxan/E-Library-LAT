@@ -38,7 +38,7 @@ export function AccountTab({ reader, onReader, onSignOut }: Props) {
       <View style={styles.panel}>
         <Text style={styles.sectionTitle}>API address</Text>
         <Text style={styles.helper}>Android emulator default: {DEFAULT_BASE_URL}</Text>
-        <TextInput value={baseUrl} onChangeText={setBaseUrl} autoCapitalize="none" keyboardType="url" style={styles.input} placeholder="http://10.0.2.2:4100" />
+        <TextInput value={baseUrl} onChangeText={setBaseUrl} autoCapitalize="none" keyboardType="url" style={styles.input} placeholder="https://reading-room-lat.wasmer.app" />
         <Pressable style={styles.secondaryButton} onPress={() => void saveAddress()}><Text style={styles.secondaryText}>Save address</Text></Pressable>
       </View>
       {reader ? (
