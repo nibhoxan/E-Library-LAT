@@ -48,7 +48,7 @@ Open `http://localhost:4100`. The database is stored in the `reading-room-data` 
 
 1. Install the Wasmer CLI and run `wasmer login`.
 2. In the Wasmer dashboard, set `JWT_SECRET` to a random value of at least 32 characters. Optionally set `INITIAL_DESK_EMAIL` and `INITIAL_DESK_PASSWORD` (16+ characters), and remove them after the first successful start.
-3. From this folder, run `wasmer deploy`. Wasmer provisions the Postgres database on the first deployment and injects `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME` and `DB_PASSWORD`. The server builds its `DATABASE_URL` from those.
+3. From this folder, run `wasmer deploy --build-remote`. Wasmer builds the Node.js app on its servers, because the repo has no `wasmer.toml`. Wasmer provisions the Postgres database on the first deployment and injects `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME` and `DB_PASSWORD`. The server builds its `DATABASE_URL` from those.
 4. Open the app URL and check `/api/health`.
 
 The managed database is only offered in the `fr-roub1` region, so the app is pinned to it.

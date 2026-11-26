@@ -1,6 +1,7 @@
 kind: wasmer.io/App.v0
 name: e-library-lat
 owner: nibhoxan
+package: .
 
 env:
   NODE_ENV: production
