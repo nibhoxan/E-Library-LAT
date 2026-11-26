@@ -1,5 +1,5 @@
 kind: wasmer.io/App.v0
-name: e-library-lat
+name: reading-room-lat
 owner: nibhoxan
 package: .
 
