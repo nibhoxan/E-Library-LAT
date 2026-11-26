@@ -1,0 +1,17 @@
+{
+  "expo": {
+    "name": "Reading Room",
+    "slug": "reading-room",
+    "scheme": "readingroom",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "android": {
+      "package": "local.readingroom.app",
+      "usesCleartextTraffic": true
+    },
+    "plugins": [
+      "expo-asset"
+    ]
+  }
+}

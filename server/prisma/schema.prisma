@@ -1,0 +1,75 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Reader {
+  id           String       @id @default(cuid())
+  email        String       @unique
+  name         String
+  passwordHash String
+  role         String       @default("reader")
+  createdAt    DateTime     @default(now())
+  downloads    Download[]
+  bookmarks    Bookmark[]
+  shelfEntries ShelfEntry[]
+}
+
+model Title {
+  id            String       @id @default(cuid())
+  title         String
+  author        String
+  category      String
+  summary       String
+  publishedYear Int?
+  gutenbergId   Int?         @unique
+  downloads     Download[]
+  bookmarks     Bookmark[]
+  shelfEntries  ShelfEntry[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([title])
+  @@index([author])
+  @@index([category])
+}
+
+model Download {
+  id        String   @id @default(cuid())
+  titleId   String
+  readerId  String?
+  guestIp   String?
+  createdAt DateTime @default(now())
+  title     Title    @relation(fields: [titleId], references: [id], onDelete: Restrict)
+  reader    Reader?  @relation(fields: [readerId], references: [id], onDelete: Restrict)
+
+  @@index([readerId, titleId])
+  @@index([guestIp, titleId])
+  @@index([createdAt])
+}
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  readerId  String
+  titleId   String
+  createdAt DateTime @default(now())
+  reader    Reader   @relation(fields: [readerId], references: [id], onDelete: Cascade)
+  title     Title    @relation(fields: [titleId], references: [id], onDelete: Restrict)
+
+  @@unique([readerId, titleId])
+}
+
+model ShelfEntry {
+  id        String   @id @default(cuid())
+  readerId  String
+  titleId   String
+  createdAt DateTime @default(now())
+  reader    Reader   @relation(fields: [readerId], references: [id], onDelete: Cascade)
+  title     Title    @relation(fields: [titleId], references: [id], onDelete: Restrict)
+
+  @@unique([readerId, titleId])
+}

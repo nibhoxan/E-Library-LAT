@@ -1,0 +1,20 @@
+{
+  "name": "reading-room",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -n API,WEB -c green,blue \"npm run dev --workspace server\" \"npm run dev --workspace client\"",
+    "build": "npm run build --workspace server && npm run build --workspace client",
+    "db:generate": "npm run db:generate --workspace server",
+    "phone:install": "npm install --prefix phone",
+    "phone:dev": "npm run dev --prefix phone",
+    "phone:build": "npm run build --prefix phone"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
