@@ -25,6 +25,8 @@ const statements = [
     "summary" TEXT NOT NULL,
     "publishedYear" INTEGER,
     "gutenbergId" INTEGER,
+    "coverUrl" TEXT,
+    "coverCheckedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     CONSTRAINT "Title_pkey" PRIMARY KEY ("id")
@@ -70,6 +72,8 @@ const statements = [
     CONSTRAINT "EmailCode_readerId_fkey" FOREIGN KEY ("readerId") REFERENCES "Reader"("id") ON DELETE CASCADE ON UPDATE CASCADE
   )`,
   `CREATE INDEX IF NOT EXISTS "EmailCode_readerId_purpose_idx" ON "EmailCode"("readerId", "purpose")`,
+  `ALTER TABLE "Title" ADD COLUMN IF NOT EXISTS "coverUrl" TEXT`,
+  `ALTER TABLE "Title" ADD COLUMN IF NOT EXISTS "coverCheckedAt" TIMESTAMP(3)`,
   `CREATE UNIQUE INDEX IF NOT EXISTS "Reader_email_key" ON "Reader"("email")`,
   `CREATE UNIQUE INDEX IF NOT EXISTS "Title_gutenbergId_key" ON "Title"("gutenbergId")`,
   `CREATE INDEX IF NOT EXISTS "Title_title_idx" ON "Title"("title")`,

@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { prisma } from "../data/prisma.js";
+import { getCoverUrl } from "../covers/service.js";
 
 export const catalogRouter = Router();
 
@@ -23,6 +24,22 @@ catalogRouter.get("/", async (req, res, next) => {
       prisma.title.count({ where })
     ]);
     return res.json({ items, total, page, pageSize });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+// The image itself is not stored or proxied: this answers with a redirect to the cover on Open Library or Gutenberg.
+// A 404 means no cover was found, and the apps then show a generated cover instead.
+catalogRouter.get("/:id/cover", async (req, res, next) => {
+  try {
+    const url = await getCoverUrl(req.params.id);
+    if (!url) {
+      res.setHeader("Cache-Control", "public, max-age=300");
+      return res.status(404).end();
+    }
+    res.setHeader("Cache-Control", "public, max-age=86400");
+    return res.redirect(302, url);
   } catch (error) {
     return next(error);
   }

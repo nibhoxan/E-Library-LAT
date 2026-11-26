@@ -50,12 +50,24 @@ input:focus, textarea:focus { border-color: #86a18b; box-shadow: 0 0 0 3px rgba(
 input::placeholder { color: #a0a9a0; }
 textarea { resize: vertical; }
 .catalog-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 17px; }
-.catalog-card { position: relative; isolation: isolate; overflow: hidden; min-height: 268px; display: flex; flex-direction: column; padding: 23px; border: 1px solid #e0e1d8; border-radius: 15px; background: linear-gradient(145deg, rgba(255, 253, 248, .98), rgba(251, 250, 243, .96)); box-shadow: 0 2px 6px rgba(37, 54, 42, .025); transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
-.catalog-card::before { position: absolute; z-index: -1; top: 0; right: 0; width: 72px; height: 100%; border-left: 1px solid rgba(49, 85, 59, .055); background: linear-gradient(90deg, transparent, rgba(232, 238, 230, .33)); content: ""; }
-.catalog-card::after { position: absolute; z-index: -1; top: 22px; right: 25px; width: 22px; height: 30px; border: 1px solid rgba(66, 108, 77, .22); border-radius: 2px 7px 2px 2px; content: ""; opacity: .7; }
+.catalog-card { position: relative; overflow: hidden; display: flex; align-items: stretch; gap: 18px; padding: 18px; border: 1px solid #e0e1d8; border-radius: 15px; background: linear-gradient(145deg, rgba(255, 253, 248, .98), rgba(251, 250, 243, .96)); box-shadow: 0 2px 6px rgba(37, 54, 42, .025); transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+.card-cover { flex: 0 0 96px; align-self: flex-start; }
+.card-body { min-width: 0; flex: 1; display: flex; flex-direction: column; }
+.cover { position: relative; overflow: hidden; width: 100%; aspect-ratio: 2 / 3; border-radius: 3px 8px 8px 3px; box-shadow: 0 8px 18px rgba(35, 51, 42, .2), inset 4px 0 0 rgba(255, 255, 255, .13), inset -1px 0 0 rgba(0, 0, 0, .08); }
+.cover img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .3s ease; }
+.cover img.is-loaded { opacity: 1; }
+.cover-fallback { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: space-between; gap: 6px; padding: 12% 10% 10% 14%; font-family: var(--serif); }
+.cover-fallback::before { position: absolute; inset: 5% 5% 5% 9%; border: 1px solid currentColor; border-radius: 2px; opacity: .28; content: ""; }
+.cover-card { font-size: 9px; }
+.cover-detail { font-size: 17px; }
+.cover-category { font-family: "DM Sans", "Segoe UI", sans-serif; font-size: .62em; font-weight: 700; line-height: 1; letter-spacing: .14em; text-transform: uppercase; opacity: .75; }
+.cover-title { display: -webkit-box; overflow: hidden; font-size: 1.25em; line-height: 1.18; -webkit-box-orient: vertical; -webkit-line-clamp: 5; }
+.cover-author { font-size: .8em; line-height: 1.2; opacity: .85; }
+.record-layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: clamp(26px, 5vw, 52px); align-items: start; }
+.record-cover { position: sticky; top: 24px; }
 .catalog-card:hover { transform: translateY(-3px); border-color: #cbd6c8; box-shadow: var(--shadow-card); }
 .card-kicker { color: var(--green); font-size: 9px; font-weight: 700; letter-spacing: 1.15px; text-transform: uppercase; }
-.catalog-card h2 { max-width: calc(100% - 26px); margin: 24px 0 4px; font: 22px/1.2 var(--serif); }
+.catalog-card h2 { margin: 8px 0 4px; font: 22px/1.2 var(--serif); }
 .catalog-card h2 a:hover { color: var(--green); }
 .card-author { margin: 3px 0 12px; color: #69756d; font-size: 12px; }
 .card-summary { display: -webkit-box; overflow: hidden; margin: 0 0 17px; color: #727d73; font-size: 12px; line-height: 1.65; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
@@ -150,7 +162,10 @@ textarea { resize: vertical; }
   .search-panel, .desk-form { grid-template-columns: 1fr; }
   .search-panel { gap: 11px; padding: 14px; }
   .catalog-grid { grid-template-columns: 1fr; gap: 12px; }
-  .catalog-card { min-height: 230px; padding: 20px; }
+  .catalog-card { padding: 16px; gap: 14px; }
+  .card-cover { flex-basis: 82px; }
+  .record-layout { grid-template-columns: 1fr; }
+  .record-cover { position: static; width: 170px; }
   .page-heading { align-items: flex-start; gap: 14px; }
   .page-heading h1 { font-size: clamp(34px, 9vw, 44px); }
   .page-heading p { font-size: 13px; }

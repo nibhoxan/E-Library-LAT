@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { api, loadShelf } from "../api";
+import { Cover } from "../Cover";
 import { colors, corners } from "../theme";
 import type { ShelfResponse, Title } from "../types";
 
@@ -41,8 +42,11 @@ export function ShelfTab({ reader, onSelect }: { reader: { id: string } | null; 
         {error ? <Text style={styles.error}>{error}</Text> : null}
         {busy ? <ActivityIndicator color={colors.green} /> : list.length === 0 ? <Text style={styles.empty}>Nothing saved here yet.</Text> : list.map((item) => (
           <View style={styles.card} key={item.id}>
-            <Pressable onPress={() => onSelect(item)}><Text style={styles.bookTitle}>{item.title}</Text><Text style={styles.author}>{item.author} · {item.category}</Text></Pressable>
-            <Pressable onPress={() => void remove(item)}><Text style={styles.remove}>Remove</Text></Pressable>
+            <Pressable onPress={() => onSelect(item)}><Cover title={item} width={64} /></Pressable>
+            <View style={styles.cardBody}>
+              <Pressable onPress={() => onSelect(item)}><Text style={styles.bookTitle}>{item.title}</Text><Text style={styles.author}>{item.author} · {item.category}</Text></Pressable>
+              <Pressable onPress={() => void remove(item)}><Text style={styles.remove}>Remove</Text></Pressable>
+            </View>
           </View>
         ))}
       </>}
@@ -61,8 +65,9 @@ const styles = StyleSheet.create({
   activeTab: { borderBottomColor: colors.green },
   tabText: { color: colors.muted, fontSize: 12, fontWeight: "600" },
   activeTabText: { color: colors.greenDark },
-  card: { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.line, borderRadius: corners.card, padding: 16, marginBottom: 11, shadowColor: "#23332a", shadowOpacity: 0.02, shadowRadius: 6, shadowOffset: { width: 0, height: 2 }, elevation: 1 },
-  bookTitle: { color: colors.ink, fontFamily: "serif", fontSize: 21, lineHeight: 26 },
+  card: { flexDirection: "row", gap: 14, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.line, borderRadius: corners.card, padding: 16, marginBottom: 11, shadowColor: "#23332a", shadowOpacity: 0.02, shadowRadius: 6, shadowOffset: { width: 0, height: 2 }, elevation: 1 },
+  cardBody: { flex: 1, minWidth: 0 },
+  bookTitle: { color: colors.ink, fontFamily: "serif", fontSize: 19, lineHeight: 24 },
   author: { color: colors.muted, fontSize: 12, marginTop: 5 },
   remove: { color: colors.green, fontWeight: "700", fontSize: 12, marginTop: 13 },
   empty: { color: colors.muted, textAlign: "center", paddingVertical: 30 },
