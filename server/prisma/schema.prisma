@@ -13,11 +13,27 @@ model Reader {
   email        String       @unique
   name         String
   passwordHash String
-  role         String       @default("reader")
-  createdAt    DateTime     @default(now())
-  downloads    Download[]
-  bookmarks    Bookmark[]
-  shelfEntries ShelfEntry[]
+  role            String       @default("reader")
+  emailVerifiedAt DateTime?
+  createdAt       DateTime     @default(now())
+  downloads       Download[]
+  bookmarks       Bookmark[]
+  shelfEntries    ShelfEntry[]
+  emailCodes      EmailCode[]
+}
+
+model EmailCode {
+  id        String    @id @default(cuid())
+  readerId  String
+  purpose   String
+  codeHash  String
+  expiresAt DateTime
+  attempts  Int       @default(0)
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  reader    Reader    @relation(fields: [readerId], references: [id], onDelete: Cascade)
+
+  @@index([readerId, purpose])
 }
 
 model Title {

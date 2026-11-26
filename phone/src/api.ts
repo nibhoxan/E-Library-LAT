@@ -40,7 +40,7 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   }
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));
-    throw new Error(body.error ?? `Request failed (${response.status}).`);
+    throw Object.assign(new Error(body.error ?? `Request failed (${response.status}).`), { code: body.code as string | undefined });
   }
   if (response.status === 204) return undefined as T;
   return response.json() as Promise<T>;
@@ -52,10 +52,27 @@ export async function signIn(email: string, password: string) {
   return response.reader;
 }
 
+// Creating an account does not sign you in: a 6-digit code is emailed first and confirmed with verifyEmail.
 export async function signUp(name: string, email: string, password: string) {
-  const response = await api<{ token: string; reader: Reader }>("/session/register", { method: "POST", body: JSON.stringify({ name, email, password }) });
+  return api<{ emailSent: boolean }>("/session/register", { method: "POST", body: JSON.stringify({ name, email, password }) });
+}
+
+export async function verifyEmail(email: string, code: string) {
+  const response = await api<{ token: string; reader: Reader }>("/session/verify-email", { method: "POST", body: JSON.stringify({ email, code }) });
   await setToken(response.token);
   return response.reader;
+}
+
+export async function resendCode(email: string) {
+  await api("/session/resend-code", { method: "POST", body: JSON.stringify({ email }) });
+}
+
+export async function forgotPassword(email: string) {
+  await api("/session/forgot-password", { method: "POST", body: JSON.stringify({ email }) });
+}
+
+export async function resetPassword(email: string, code: string, newPassword: string) {
+  await api("/session/reset-password", { method: "POST", body: JSON.stringify({ email, code, newPassword }) });
 }
 
 export async function startGuest() {

@@ -6,6 +6,9 @@ package: .
 env:
   NODE_ENV: production
   # Set JWT_SECRET (32+ characters) as a secret in the Wasmer dashboard, not in this file.
+  # Email codes (sign-up verification and password reset) use Brevo. Store both as secrets, not in this file:
+  #   wasmer app secrets create BREVO_API_KEY "<key>"
+  #   wasmer app secrets create BREVO_SENDER_EMAIL "<verified sender address>"
   # Optional first desk account: INITIAL_DESK_EMAIL and INITIAL_DESK_PASSWORD (16+ characters).
 
 capabilities:
